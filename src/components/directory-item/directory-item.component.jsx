@@ -22,3 +22,12 @@ const DirectoryItem = ({ category }) => {
 };
 
 export default DirectoryItem;
+
+
+
+
+
+
+
+
+

@@ -1,17 +1,33 @@
-import {Routes, Route,Navigate} from 'react-router-dom';
-import { useContext } from 'react';
+import {Routes, Route} from 'react-router-dom';
 
-import { UserContext } from './context/user.context';
+import { useDispatch } from 'react-redux';
+import { useEffect } from 'react';
 
 import Navigation from './routes/navigation/navigation.component';
 import Home from "./routes/home/home.component";
 import Authentication from './routes/authentication/authentication.component.jsx';
 import Shop from './routes/shop/shop.component';
 import Checkout from './routes/checkout/checkout.component';
-
+import { setCurrentUser } from './store/user/user.action';
+import { 
+    onAuthStateChangedListener, 
+    createUserDocumentFromAuth,
+} from './useful/fireBase/filebase.useful';
 
 const App = () => {
-  const { currentUser } = useContext(UserContext);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+   const unsubscribe = onAuthStateChangedListener((user)=>{
+    if (user) {
+      createUserDocumentFromAuth(user);
+    }
+    dispatch(setCurrentUser(user));
+   });
+
+   return unsubscribe;
+  })
+
   return (    
     <Routes>
       <Route path='/' element={<Navigation/>}> 
@@ -20,7 +36,7 @@ const App = () => {
       <Route path='/checkout' element={<Checkout />} />
       <Route 
        path='auth'
-       element={ currentUser ? <Navigate to="/" replace/> : <Authentication/>}/>
+       element={<Authentication/>} />
       </Route>   
     </Routes>
   );

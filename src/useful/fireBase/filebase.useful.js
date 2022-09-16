@@ -1,4 +1,4 @@
-import {initializeApp } from 'firebase/app';
+import { initializeApp } from 'firebase/app';
 import { 
     getAuth,
     signInWithPopup,
@@ -32,18 +32,18 @@ const firebaseConfig = {
 // Initialize Firebase
 const firebaseApp = initializeApp(firebaseConfig);
 
-const provider = new GoogleAuthProvider();
+const googleProvider = new GoogleAuthProvider();
 
-provider.setCustomParameters({
+googleProvider.setCustomParameters({
     prompt: "select_account"
 });
 
 export const auth = getAuth(); //xác nhận tài khoản = method getAuth và gán cho auth
-export const signInWithGooglePopup = () => signInWithPopup(auth,provider);
+export const signInWithGooglePopup = () => signInWithPopup(auth,googleProvider);
 
 export const db = getFirestore(); // gán dữ liệu vô db (database)
 
-export const addCollectionAndDocuments = async (collectionKey, objectsToAdd) => {
+export const addCollectionAndDocuments = async (collectionKey, objectsToAdd,field) => {
     const collectionRef = collection (db,collectionKey); 
     const batch = writeBatch(db); // truyền vào database 
 
@@ -52,7 +52,7 @@ export const addCollectionAndDocuments = async (collectionKey, objectsToAdd) => 
         batch.set(docRef,object);
     });
     await batch.commit();
-    console.log('done');
+    console.log('done'); 
 };
 
 export const getCategoriesAndDocuments = async () => {
@@ -60,12 +60,8 @@ export const getCategoriesAndDocuments = async () => {
     const q = query(collectionRef);
 
     const querySnapShot = await getDocs(q);
-    const categoryMap = querySnapShot.docs.reduce((acc,docSnapShot) => {
-        const {title,items} = docSnapShot.data();
-        acc[title.toLowerCase()] = items;
-        return acc;
-    },{});
-    return categoryMap;
+    return querySnapShot.docs.map((docSnapshot) => docSnapshot.data());
+    
 }
 
 export const createUserDocumentFromAuth = async (
@@ -75,15 +71,11 @@ export const createUserDocumentFromAuth = async (
     if(!userAuth) return;
     
     const userDocRef = doc(db, 'users', userAuth.uid); // Tạo Document trong database , userDocRef sẽ là database
-    
-    console.log(userDocRef);
 
     const userSnapShot = await getDoc(userDocRef); // Truy xuất dữ liệu trong database 
-    console.log(userSnapShot);
-    console.log(userSnapShot.exists()); //kiểm tra nếu dữ liệu này có trong database hay không
 
     if(!userSnapShot.exists()) { //Nếu userSnapshot k tồn tại
-        const {displayName,email } = userAuth; // tạo 1 biến chứa displayname và email lấy từ userAuth
+        const { displayName,email } = userAuth; // tạo 1 biến chứa displayname và email lấy từ userAuth
         const createdAt = new Date(); // gán ngày tạo vào createdAt
         try{ // setDoc (database , { hiển thị những dữ liệu gì (displayName, email , createdAt) })
             await setDoc(userDocRef,{
@@ -97,7 +89,7 @@ export const createUserDocumentFromAuth = async (
         }
     }
     return userDocRef;
-}
+};
 
 export const createAuthUserWithEmailAndPassword = async (email,password) => {
  if (!email || !password) return;
