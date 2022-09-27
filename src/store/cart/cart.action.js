@@ -1,4 +1,4 @@
-import { createAction } from "../../useful/reduce/reduce.utils";
+import { createAction } from "../../ulti/reduce/reduce.utils";
 import { CART_ACTION_TYPES } from "./cart.types";
 
 const addCartItem = (cartItems, productToAdd) => {
